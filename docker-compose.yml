@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: temporal-postgres
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_DB: temporal
+    volumes:
+      - temporal_pgdata:/var/lib/postgresql/data
+    profiles: ["dependencies", "fully_dockerized"]
+
+  temporal:
+    image: temporalio/auto-setup:1.24
+    container_name: temporal
+    depends_on:
+      - postgres
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal
+      POSTGRES_SEEDS: postgres
+    ports:
+      - "7233:7233"
+    profiles: ["dependencies", "fully_dockerized"]
+
+  temporal-web:
+    image: temporalio/ui:2.25.0
+    container_name: temporal-web
+    depends_on:
+      - temporal
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    ports:
+      - "8080:8080"
+    profiles: ["dependencies", "fully_dockerized"]
+
+  worker:
+    build: .
+    container_name: code-explainer-worker
+    command: ["python", "worker.py"]
+    env_file: .env
+    depends_on:
+      - temporal
+    profiles: ["fully_dockerized"]
+
+  client:
+    build: .
+    container_name: code-explainer-client
+    command: ["python", "main.py"]
+    env_file: .env
+    depends_on:
+      - temporal
+    profiles: ["fully_dockerized"]
+
+volumes:
+  temporal_pgdata:
