@@ -1,0 +1,12 @@
+[project]
+name = "learning-langgraph-basics"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain-community>=0.4.1",
+    "langchain[google-genai,openai]>=1.2.6",
+    "langgraph>=1.0.6",
+    "temporalio>=1.21.1",
+]
